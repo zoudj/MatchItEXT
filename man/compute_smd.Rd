@@ -19,11 +19,11 @@ Return a data frame containing SMD and other information
 This function accepts a MatchIt object (i.e., the result of matchit function)
 , and calculates standardized mean differences before and after matching.
 Note exact matching and subclassification are not applicable to this function
-. In addition, SMD can be calculated on the basis of the standard deviation
-of original treatment group, which is the formula used in matchit function,
-or on the basis of the simple pooled standard deviation of original treatment
-and control group. The default is sd = "pooled", but it can be switched to
-"treatment".
+. For subclassification, use compute_sub_smd() instead. In addition, SMD can
+be calculated on the basis of the standard deviation of original treatment
+group, which is the formula used in matchit function, or on the basis of the
+simple pooled standard deviation of original treatment and control group. The
+default is sd = "pooled", but it can be switched to "treatment".
 }
 \examples{
 calculate SMD based on the simple pooled standard deviation
@@ -49,5 +49,8 @@ https://doi.org/10.1080/00273171.2011.568786
 Ho, D. E., Imai, K., King, G., & Stuart, E. A. (2011). MatchIt:
 Nonparametric Preprocessing for Parametric Causal Inference. \emph{Journal
 of Statistical Software, 42}(8). https://doi.org/10.18637/jss.v042.i08
+}
+\seealso{
+compute_sub_smd()
 }
 \keyword{SMD}

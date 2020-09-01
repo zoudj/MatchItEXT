@@ -3,16 +3,17 @@
 #' This function accepts a MatchIt object (i.e., the result of matchit function)
 #' , and calculates standardized mean differences before and after matching.
 #' Note exact matching and subclassification are not applicable to this function
-#' . In addition, SMD can be calculated on the basis of the standard deviation
-#' of original treatment group, which is the formula used in matchit function,
-#' or on the basis of the simple pooled standard deviation of original treatment
-#' and control group. The default is sd = "pooled", but it can be switched to
-#' "treatment".
+#' . For subclassification, use compute_sub_smd() instead. In addition, SMD can
+#' be calculated on the basis of the standard deviation of original treatment
+#' group, which is the formula used in matchit function, or on the basis of the
+#' simple pooled standard deviation of original treatment and control group. The
+#'  default is sd = "pooled", but it can be switched to "treatment".
 #'
 #' @param mi_obj A matchit object derived from MatchIt pacakge
 #' @param sd The standard deviation used as the denominator in the formula
 #' @keywords SMD
 #' @aliases SMD
+#' @seealso compute_sub_smd()
 #' @return Return a data frame containing SMD and other information
 #' @export
 #' @examples
@@ -97,12 +98,77 @@ compute_smd<- function(mi_obj, sd = "pooled"){
           smd_data$sd_bf_tr
         smd_data$smd_after <-  (smd_data$mean_tr_af - smd_data$mean_ctl_af) /
           smd_data$sd_bf_tr
+      } else {
+        warning("The argument of sd can only be either 'pooled' or
+                'treatment'.")
       }
     }
   smd_data$rnames <- NULL
   return(smd_data)
 }
 
-
+#' Compute standardized mean differences for subclassification result
+#'
+#' This function accepts a MatchIt object (i.e., the result of matchit function)
+#' , and calculates the overall standardized mean difference after
+#'  subclassification. Note only subclassification result is applicable to this
+#' function. For other matching results except for exact matching,
+#' use compute_smd() instead. In addition, SMD can be calculated on the basis of
+#'  the standard deviation of original treatment group, which is the formula
+#'  used in matchit function, or on the basis of the simple pooled standard
+#'  deviation of original treatment and control group. The default is sd =
+#'  "pooled", but it can be switched to "treatment".
+#' @param mi_obj A matchit object derived from MatchIt pacakge
+#' @param sd The standard deviation used as the denominator in the formula
+#' @keywords SMD subclassification
+#' @aliases SMD
+#' @seealso compute_smd()
+#' @return Return a scalar (the overall SMD)
+#' @import dplyr
+#' @importFrom MatchIt match.data
+#' @importFrom tidyr pivot_wider
+#' @export
+#' @examples
+#' take lalonde data as an example
+#' run \code{\link[MatchIt]{matchit}} to obtain the matching result
+#' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
+#' data = lalonde, method = "subclass", subclass = 7)}
+#' > \code{compute_sub_smd(m_out, sd = "treatment")}
+compute_sub_smd <- function(mi_obj, sd = "pooled"){
+  if (is(mi_obj, "matchit") == FALSE) {
+    warning("The input data is not a matchit object.")
+  } else if (as.character(mi_obj$call)[4] == "exact") {
+    warning("The matching method is exact matching, compute_sub_smd() and
+            compute_smd() are inapplicable to it.")
+  } else if(as.character(mi_obj$call)[4] != "subclass"){
+    warning("The matching method is not subclassification, please try
+            compute_smd() instead.")
+  } else {
+    matched_data <- MatchIt::match.data(mi_obj)
+    compared_var <- as.character(mi_obj$formula)[2]
+    sub_mean_diff <- suppressMessages(matched_data %>%
+      dplyr::group_by(subclass, .data[[compared_var]]) %>%
+      dplyr::summarise(weighted_mean = weighted.mean(distance, weights),
+                       n = n()) %>%
+      tidyr::pivot_wider(names_from = .data[[compared_var]], values_from = c(weighted_mean, n)) %>%
+      dplyr::mutate(mean_diff = weighted_mean_1 - weighted_mean_0,
+                    sub_n = n_0 + n_1, product = mean_diff * sub_n))
+    var_bf_tr <- var(mi_obj$distance[mi_obj$treat == 1])
+    var_bf_ctl <- var(mi_obj$distance[mi_obj$treat == 0])
+    sd_bf_pooled <- sqrt((var_bf_tr + var_bf_ctl) /2)
+    sd_bf_tr <- sd(mi_obj$distance[mi_obj$treat == 1])
+    if (sd == "pooled") {
+      SMD <- sum(sub_mean_diff$product) / sum(sub_mean_diff$sub_n) /
+        sd_bf_pooled
+      return(SMD)
+    } else if (sd == "treatment") {
+      SMD <- sum(sub_mean_diff$product) / sum(sub_mean_diff$sub_n) /
+        sd_bf_tr
+      return(SMD)
+    } else {
+      warning("The argument of sd can only be either 'pooled' or 'treatment'.")
+    }
+  }
+}
 
 
