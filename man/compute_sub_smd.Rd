@@ -5,7 +5,7 @@
 \alias{SMD}
 \title{Compute standardized mean differences for subclassification result}
 \usage{
-compute_sub_smd(mi_obj, sd = "pooled")
+compute_sub_smd(mi_obj = NULL, sd = "pooled")
 }
 \arguments{
 \item{mi_obj}{A matchit object derived from MatchIt pacakge}
@@ -32,6 +32,16 @@ run \code{\link[MatchIt]{matchit}} to obtain the matching result
 > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
 data = lalonde, method = "subclass", subclass = 7)}
 > \code{compute_sub_smd(m_out, sd = "treatment")}
+}
+\references{
+Austin, P. C. (2011). An Introduction to Propensity Score Methods
+for Reducing the Effects of Confounding in Observational Studies.
+\emph{Multivariate Behavioral Research, 46}(3), 399-424.
+https://doi.org/10.1080/00273171.2011.568786
+
+Ho, D. E., Imai, K., King, G., & Stuart, E. A. (2011). MatchIt:
+Nonparametric Preprocessing for Parametric Causal Inference. \emph{Journal
+of Statistical Software, 42}(8). https://doi.org/10.18637/jss.v042.i08
 }
 \seealso{
 compute_smd()

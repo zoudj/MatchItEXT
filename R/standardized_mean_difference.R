@@ -38,7 +38,7 @@
 #'   Nonparametric Preprocessing for Parametric Causal Inference. \emph{Journal
 #'   of Statistical Software, 42}(8). https://doi.org/10.18637/jss.v042.i08
 #'
-compute_smd<- function(mi_obj, sd = "pooled"){
+compute_smd<- function(mi_obj = NULL, sd = "pooled"){
   # check matchit object
   # check matching method, result of exact matching or subclassification is not
   # applicable to this function
@@ -104,6 +104,7 @@ compute_smd<- function(mi_obj, sd = "pooled"){
       }
     }
   smd_data$rnames <- NULL
+  class(smd_data) <- append(class(smd_data),"smd.data")
   return(smd_data)
 }
 
@@ -134,7 +135,14 @@ compute_smd<- function(mi_obj, sd = "pooled"){
 #' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
 #' data = lalonde, method = "subclass", subclass = 7)}
 #' > \code{compute_sub_smd(m_out, sd = "treatment")}
-compute_sub_smd <- function(mi_obj, sd = "pooled"){
+#' @references Austin, P. C. (2011). An Introduction to Propensity Score Methods
+#'   for Reducing the Effects of Confounding in Observational Studies.
+#'   \emph{Multivariate Behavioral Research, 46}(3), 399-424.
+#'   https://doi.org/10.1080/00273171.2011.568786
+#' @references Ho, D. E., Imai, K., King, G., & Stuart, E. A. (2011). MatchIt:
+#'   Nonparametric Preprocessing for Parametric Causal Inference. \emph{Journal
+#'   of Statistical Software, 42}(8). https://doi.org/10.18637/jss.v042.i08
+compute_sub_smd <- function(mi_obj = NULL, sd = "pooled"){
   if (is(mi_obj, "matchit") == FALSE) {
     warning("The input data is not a matchit object.")
   } else if (as.character(mi_obj$call)[4] == "exact") {

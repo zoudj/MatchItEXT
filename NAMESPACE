@@ -2,6 +2,10 @@
 
 export(compute_smd)
 export(compute_sub_smd)
+export(plot_smd)
 import(dplyr)
+import(ggplot2)
 importFrom(MatchIt,match.data)
+importFrom(tibble,rownames_to_column)
+importFrom(tidyr,pivot_longer)
 importFrom(tidyr,pivot_wider)

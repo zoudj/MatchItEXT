@@ -5,7 +5,7 @@
 \alias{SMD}
 \title{Compute standardized mean differences before and after matching}
 \usage{
-compute_smd(mi_obj, sd = "pooled")
+compute_smd(mi_obj = NULL, sd = "pooled")
 }
 \arguments{
 \item{mi_obj}{A matchit object derived from MatchIt pacakge}
