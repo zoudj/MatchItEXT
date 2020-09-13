@@ -80,4 +80,65 @@ plot_smd <- function(smd_data = NULL) {
 
 }
 
+#' Draw QQ plots of propensity score between groups before and after matching
+#'
+#' This function accepts a MatchIt object (i.e., the result of matchit function)
+#' and draw side-by-side QQ plots of propensity score between groups before and
+#' after matching, for the purpose of comparison. Note only the results of
+#' Nearest Neighbor Matching, Optimal Matching, Full Matching, and Genetic
+#' Matching are acceptable. The results of Exact Matching and Subclassification
+#' are not applicable to this function.
+#'
+#' @param mi_obj A matchit object derived from MatchIt pacakge
+#' @keywords QQ plot
+#' @return Return QQ plots
+#' @export
+#' @import ggplot2
+#' @examples
+#' take lalonde data as an example
+#' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
+#' data = lalonde, method = "nearest")}
+#' > \code{plot_ps_qq(m_out)}
+#'
+plot_ps_qq <- function(mi_obj = NULL) {
+  # draw qq plot of propensity score between treatment and control group before
+  # matching
+  # Create the quantile-quantile data table
+  qq_table_bf <- qqplot(x = mi_obj$distance[mi_obj$treat == 0], y = mi_obj$distance[mi_obj$treat == 1], plot.it=FALSE)
+  qq_table_bf <- as.data.frame(qq_table_bf)
+  # Set the x and y limits
+  xylim <- range(c(qq_table_bf$x, qq_table_bf$y))
+  # Generate qq plot
+  qq_bf <- ggplot(qq_table_bf, aes( x = x, y = y)) + geom_point() +
+    geom_abline(intercept = 0, slope = 1) +
+    coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
+    xlab("Control Group") + ylab("Treatment Group") +
+    ggtitle("Before Matching") + theme(plot.title = element_text(hjust = 0.5))
 
+  # draw qq plot of propensity score between treatment and control group after
+  # matching
+  # Create the quantile-quantile data table
+  df_af <- data.frame(ps = mi_obj$distance, wt = mi_obj$weights,
+                      treat = mi_obj$treat)
+  df_af_tr <- df_af[which(df_af$wt != 0 & df_af$treat == 1),]
+  df_af_ctl <- df_af[which(df_af$wt != 0 & df_af$treat == 0),]
+  # create quantile sequence
+  n <- min(nrow(df_af_tr), nrow(df_af_ctl))
+  quantile_seq <- (1:n) / n - 0.5 / n
+  # create weighted quantile vector for control and treatment group
+  quan_af_tr <- Hmisc::wtd.quantile(df_af_tr$ps, weights = df_af_tr$wt,
+                                    probs = quantile_seq)
+  quan_af_ctl <- Hmisc::wtd.quantile(df_af_ctl$ps, weights = df_af_ctl$wt,
+                                     probs = quantile_seq)
+  qq_af <- ggplot(data = NULL, aes( x= quan_af_ctl, y = quan_af_tr)) +
+    geom_point() + geom_abline( intercept=0, slope=1) +
+    coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
+    xlab("Control Group") + ylab("Treatment Group") +
+    ggtitle("After Matching") + theme(plot.title = element_text(hjust = 0.5))
+
+  # combine two qq plots in a canvas
+  devAskNewPage(ask = FALSE)
+  qq_total <- ggpubr::ggarrange(qq_bf, qq_af, nrow = 1)
+  ggpubr::annotate_figure(qq_total, top = text_grob("QQ Plot for Propensity Score before and after matching", face = "bold", size = 14))
+
+}
