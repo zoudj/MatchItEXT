@@ -10,15 +10,15 @@ plot_ps_qq(mi_obj = NULL)
 \item{mi_obj}{A matchit object derived from MatchIt pacakge}
 }
 \value{
-Return QQ plots
+Return a list of relevant data, code, and QQ plot
 }
 \description{
 This function accepts a MatchIt object (i.e., the result of matchit function)
 and draw side-by-side QQ plots of propensity score between groups before and
 after matching, for the purpose of comparison. Note only the results of
-Nearest Neighbor Matching, Optimal Matching, Full Matching, and Genetic
-Matching are acceptable. The results of Exact Matching and Subclassification
-are not applicable to this function.
+Subclassification, Nearest Neighbor Matching, Optimal Matching, Full
+Matching, and Genetic Matching are acceptable. The results of Exact Matching
+is not applicable to this function.
 }
 \examples{
 take lalonde data as an example
@@ -26,6 +26,9 @@ take lalonde data as an example
 data = lalonde, method = "nearest")}
 > \code{plot_ps_qq(m_out)}
 
+}
+\seealso{
+plot_smd()
 }
 \keyword{QQ}
 \keyword{plot}

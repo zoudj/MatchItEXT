@@ -26,5 +26,8 @@ returned list.
 \examples{
 > \code{plot_smd_data <- plot_smd(smd_data)}
 }
+\seealso{
+plot_ps_qq()
+}
 \keyword{SMD}
 \keyword{plot}

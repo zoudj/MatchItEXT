@@ -12,6 +12,7 @@
 #'
 #' @param smd_data a data frame derived from \code{\link{compute_smd}}
 #' @keywords SMD plot
+#' @seealso plot_ps_qq()
 #' @return Return a list of relevant data, code, and plot
 #' @import ggplot2
 #' @import dplyr
@@ -85,13 +86,14 @@ plot_smd <- function(smd_data = NULL) {
 #' This function accepts a MatchIt object (i.e., the result of matchit function)
 #' and draw side-by-side QQ plots of propensity score between groups before and
 #' after matching, for the purpose of comparison. Note only the results of
-#' Nearest Neighbor Matching, Optimal Matching, Full Matching, and Genetic
-#' Matching are acceptable. The results of Exact Matching and Subclassification
-#' are not applicable to this function.
+#' Subclassification, Nearest Neighbor Matching, Optimal Matching, Full
+#' Matching, and Genetic Matching are acceptable. The results of Exact Matching
+#' is not applicable to this function.
 #'
 #' @param mi_obj A matchit object derived from MatchIt pacakge
 #' @keywords QQ plot
-#' @return Return QQ plots
+#' @seealso plot_smd()
+#' @return Return a list of relevant data, code, and QQ plot
 #' @export
 #' @import ggplot2
 #' @examples
