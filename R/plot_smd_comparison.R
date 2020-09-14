@@ -114,6 +114,12 @@ plot_ps_qq <- function(mi_obj = NULL) {
     coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
     xlab("Control Group") + ylab("Treatment Group") +
     ggtitle("Before Matching") + theme(plot.title = element_text(hjust = 0.5))
+  qq_bf_code <- quote(ggplot(qq_table_bf, aes( x = x, y = y)) + geom_point() +
+                        geom_abline(intercept = 0, slope = 1) +
+                        coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
+                        xlab("Control Group") + ylab("Treatment Group") +
+                        ggtitle("Before Matching") +
+                        theme(plot.title = element_text(hjust = 0.5)))
 
   # draw qq plot of propensity score between treatment and control group after
   # matching
@@ -130,15 +136,27 @@ plot_ps_qq <- function(mi_obj = NULL) {
                                     probs = quantile_seq)
   quan_af_ctl <- Hmisc::wtd.quantile(df_af_ctl$ps, weights = df_af_ctl$wt,
                                      probs = quantile_seq)
-  qq_af <- ggplot(data = NULL, aes( x= quan_af_ctl, y = quan_af_tr)) +
+  qq_table_af <- data.frame(x = quan_af_ctl, y = quan_af_tr)
+  qq_af <- ggplot(data = qq_table_af, aes( x= x, y = y)) +
     geom_point() + geom_abline( intercept=0, slope=1) +
     coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
     xlab("Control Group") + ylab("Treatment Group") +
     ggtitle("After Matching") + theme(plot.title = element_text(hjust = 0.5))
+  qq_af_code <- quote(ggplot(data = qq_table_af, aes( x= x, y = y)) +
+                        geom_point() + geom_abline( intercept=0, slope=1) +
+                        coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
+                        xlab("Control Group") + ylab("Treatment Group") +
+                        ggtitle("After Matching") +
+                        theme(plot.title = element_text(hjust = 0.5)))
 
   # combine two qq plots in a canvas
   devAskNewPage(ask = FALSE)
-  qq_total <- ggpubr::ggarrange(qq_bf, qq_af, nrow = 1)
-  ggpubr::annotate_figure(qq_total, top = text_grob("QQ Plot for Propensity Score before and after matching", face = "bold", size = 14))
-
+  qq_combined <- ggpubr::ggarrange(qq_bf, qq_af, nrow = 1)
+  qq_final <- ggpubr::annotate_figure(qq_combined, top =
+    ggpubr::text_grob("QQ Plot for Propensity Score before and after matching",
+      face = "bold", size = 14))
+  results <- list(qq_table_bf = qq_table_bf, xylim = xylim, qq_bf_code =
+                    qq_bf_code, qq_table_af = qq_table_af, qq_af_code =
+                    qq_af_code, plot = qq_final)
+  return(results)
 }
