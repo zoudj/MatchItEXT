@@ -37,3 +37,26 @@ compute_var_ratio <- function(mi_obj){
                  ratio_af = ratio_af)
   return(results)
 }
+
+#' Parse formula to obtain grouping variable and covariate vector
+#'
+#' This function parses the formula used in matchit() to obtain the grouping
+#' variable and the covariate vector.
+#'
+#' @keywords grouping covariate
+#' @return Return a list including the grouping variable and covariate vector
+#' @export
+#' @import dplyr
+#' @examples
+#' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
+#' data = lalonde, method = "full")}
+#' > \code{parse_formula(m_out)}
+parse_formula <- function(mi_obj = NULL){
+  grouping <- as.character(mi_obj$formula)[2]
+  covariates_vec <- as.character(mi_obj$formula)[3] %>%
+    strsplit(split = "+", fixed = TRUE) %>%
+    unlist() %>%
+    trimws(which = "both")
+  return_list <- list(grouping = grouping, covariates_vec = covariates_vec)
+  return(return_list)
+}

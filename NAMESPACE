@@ -3,6 +3,7 @@
 export(compute_smd)
 export(compute_sub_smd)
 export(compute_var_ratio)
+export(parse_formula)
 export(plot_ps_qq)
 export(plot_smd)
 import(dplyr)
