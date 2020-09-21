@@ -6,6 +6,9 @@
 \usage{
 parse_formula(mi_obj = NULL)
 }
+\arguments{
+\item{mi_obj}{A matchit object derived from MatchIt pacakge}
+}
 \value{
 Return a list including the grouping variable and covariate vector
 }
