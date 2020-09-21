@@ -191,11 +191,6 @@ compute_res_var_ratio<- function(original_data = NULL, mi_obj = NULL, type_vec
         ratio_vec_af[i] <- with(dat_af, var(residuals[get(grouping_v) == 1])) /
           with(dat_af, var(residuals[get(grouping_v) == 0]))
         dat_af$residuals <- NULL
-      } else {
-        warning(sprintf("There's something wrong in your sepecification of
-                        covariate types at vector element %d.", i))
-        # message("Note: Multinomial covariates are not applicable to this
-        #function.")
       }
     }
   }
