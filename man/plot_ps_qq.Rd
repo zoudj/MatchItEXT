@@ -21,10 +21,10 @@ Matching, and Genetic Matching are acceptable. The results of Exact Matching
 is not applicable to this function.
 }
 \examples{
-take lalonde data as an example
-> \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-data = lalonde, method = "nearest")}
-> \code{plot_ps_qq(m_out)}
+# take lalonde data as an example
+ m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+    black, data = MatchIt::lalonde, method = "nearest")
+ plot_ps_qq(m_out)
 
 }
 \seealso{

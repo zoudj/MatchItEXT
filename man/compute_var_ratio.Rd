@@ -4,7 +4,7 @@
 \alias{compute_var_ratio}
 \title{Compute the ratio of the variances of propensity score in the two groups}
 \usage{
-compute_var_ratio(mi_obj)
+compute_var_ratio(mi_obj = NULL)
 }
 \arguments{
 \item{mi_obj}{A matchit object derived from MatchIt pacakge}
@@ -19,9 +19,9 @@ after matching. The variance ratio is an indicator proposed by Rubin (2001)
 to assess the similarity of distributions between groups.
 }
 \examples{
-> \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-data = lalonde, method = "full")}
-> \code{compute_var_ratio(m_out)}
+m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+black, data = MatchIt::lalonde, method = "full")
+compute_var_ratio(m_out)
 }
 \references{
 Rubin, D. B. (2001). Using propensity scores to help design
@@ -30,7 +30,7 @@ Services and Outcomes Research Methodology, 2}(3/4), 169-188.
 https://doi.org/10.1023/A:1020363010465
 }
 \seealso{
-
+compute_res_var_ratio()
 }
 \keyword{ratio}
 \keyword{variance}

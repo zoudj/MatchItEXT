@@ -10,25 +10,21 @@
 #'  default is sd = "pooled", but it can be switched to "treatment".
 #'
 #' @param mi_obj A matchit object derived from MatchIt pacakge
-#' @param sd The standard deviation used as the denominator in the formula
+#' @param sd The standard deviation used as the denominator in the formula,
+#'   either "pooled" or "treatment"
 #' @keywords SMD
 #' @aliases SMD
 #' @seealso compute_sub_smd()
 #' @return Return a data frame containing SMD and other information
 #' @export
 #' @examples
-#' calculate SMD based on the simple pooled standard deviation
-#' > \code{smd_data <- compute_smd(mi_obj, sd = "pooled")}
-#' calculate SMD based on standard deviation of original treatment group
-#' > \code{smd_data <- compute_smd(mi_obj, sd = "treatment")}
-#' take lalonde data as an example
-#' run \code{\link[MatchIt]{matchit}} to obtain the matching result (i.e., a
-#' matchit object)
-#' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-#' data = lalonde, method = "optimal")}
-#' use matching result and \code{\link{compute_smd}} to obtain a SMD data
-#' frame
-#' > \code{opt_smd <- compute_smd(m_out, sd = "treatment")}
+#' # take lalonde data as an example
+#' # run matchit() to obtain the matching result (i.e., a matchit object)
+#'  m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+#'  black, data = MatchIt::lalonde, method = "optimal")
+#' # use matching result and \code{\link{compute_smd}} to obtain a SMD data
+#' # frame
+#'  opt_smd <- compute_smd(m_out, sd = "treatment")
 #'
 #' @references Austin, P. C. (2011). An Introduction to Propensity Score Methods
 #'   for Reducing the Effects of Confounding in Observational Studies.
@@ -43,11 +39,11 @@ compute_smd<- function(mi_obj = NULL, sd = "pooled"){
   # check matching method, result of exact matching or subclassification is not
   # applicable to this function
   if (is(mi_obj, "matchit") == FALSE) {
-    warning("The input data is not a matchit object.")
+    stop("The input data is not a matchit object.")
   } else if (as.character(mi_obj$call)[4] == "exact" |
              as.character(mi_obj$call)[4] == "subclass") {
-      warning("The matching method is either exact matching or subclassification
-              , SMD table cannot be generated.")
+      stop(message(strwrap("The matching method is either exact matching or
+        subclassification, SMD table cannot be generated.")))
   }
     else {
       summary_data <- summary(mi_obj)
@@ -99,8 +95,7 @@ compute_smd<- function(mi_obj = NULL, sd = "pooled"){
         smd_data$smd_after <-  (smd_data$mean_tr_af - smd_data$mean_ctl_af) /
           smd_data$sd_bf_tr
       } else {
-        warning("The argument of sd can only be either 'pooled' or
-                'treatment'.")
+        stop("The argument of sd can only be either 'pooled' or 'treatment'.")
       }
     }
   smd_data$rnames <- NULL
@@ -122,19 +117,19 @@ compute_smd<- function(mi_obj = NULL, sd = "pooled"){
 #' @param mi_obj A matchit object derived from MatchIt pacakge
 #' @param sd The standard deviation used as the denominator in the formula
 #' @keywords SMD subclassification
-#' @aliases SMD
+#' @aliases sub_SMD
 #' @seealso compute_smd()
 #' @return Return a scalar (the overall SMD)
-#' @import dplyr
+#' @import dplyr MatchIt tidyr
 #' @importFrom MatchIt match.data
 #' @importFrom tidyr pivot_wider
 #' @export
 #' @examples
-#' take lalonde data as an example
-#' run \code{\link[MatchIt]{matchit}} to obtain the matching result
-#' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-#' data = lalonde, method = "subclass", subclass = 7)}
-#' > \code{compute_sub_smd(m_out, sd = "treatment")}
+#' # take lalonde data as an example
+#' # run matchit() to obtain the matching result
+#'  m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+#'    black, data = MatchIt::lalonde, method = "subclass", subclass = 7)
+#'  compute_sub_smd(m_out, sd = "treatment")
 #' @references Austin, P. C. (2011). An Introduction to Propensity Score Methods
 #'   for Reducing the Effects of Confounding in Observational Studies.
 #'   \emph{Multivariate Behavioral Research, 46}(3), 399-424.
@@ -144,13 +139,13 @@ compute_smd<- function(mi_obj = NULL, sd = "pooled"){
 #'   of Statistical Software, 42}(8). https://doi.org/10.18637/jss.v042.i08
 compute_sub_smd <- function(mi_obj = NULL, sd = "pooled"){
   if (is(mi_obj, "matchit") == FALSE) {
-    warning("The input data is not a matchit object.")
+    stop("The input data is not a matchit object.")
   } else if (as.character(mi_obj$call)[4] == "exact") {
-    warning("The matching method is exact matching, compute_sub_smd() and
-            compute_smd() are inapplicable to it.")
+      stop(message(strwrap("The matching method is exact matching,
+        compute_sub_smd() and compute_smd() are inapplicable to it.")))
   } else if(as.character(mi_obj$call)[4] != "subclass"){
-    warning("The matching method is not subclassification, please try
-            compute_smd() instead.")
+      stop(message(strwrap("The matching method is not subclassification,
+        please try compute_smd() instead.")))
   } else {
     matched_data <- MatchIt::match.data(mi_obj)
     compared_var <- as.character(mi_obj$formula)[2]
@@ -158,7 +153,8 @@ compute_sub_smd <- function(mi_obj = NULL, sd = "pooled"){
       dplyr::group_by(subclass, .data[[compared_var]]) %>%
       dplyr::summarise(weighted_mean = weighted.mean(distance, weights),
                        n = n()) %>%
-      tidyr::pivot_wider(names_from = .data[[compared_var]], values_from = c(weighted_mean, n)) %>%
+      tidyr::pivot_wider(names_from = .data[[compared_var]], values_from =
+                           c(weighted_mean, n)) %>%
       dplyr::mutate(mean_diff = weighted_mean_1 - weighted_mean_0,
                     sub_n = n_0 + n_1, product = mean_diff * sub_n))
     var_bf_tr <- var(mi_obj$distance[mi_obj$treat == 1])
@@ -174,7 +170,7 @@ compute_sub_smd <- function(mi_obj = NULL, sd = "pooled"){
         sd_bf_tr
       return(SMD)
     } else {
-      warning("The argument of sd can only be either 'pooled' or 'treatment'.")
+      stop("The argument of sd can only be either 'pooled' or 'treatment'.")
     }
   }
 }

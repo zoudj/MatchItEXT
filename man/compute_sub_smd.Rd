@@ -2,7 +2,7 @@
 % Please edit documentation in R/standardized_mean_difference.R
 \name{compute_sub_smd}
 \alias{compute_sub_smd}
-\alias{SMD}
+\alias{sub_SMD}
 \title{Compute standardized mean differences for subclassification result}
 \usage{
 compute_sub_smd(mi_obj = NULL, sd = "pooled")
@@ -27,11 +27,11 @@ deviation of original treatment and control group. The default is sd =
 "pooled", but it can be switched to "treatment".
 }
 \examples{
-take lalonde data as an example
-run \code{\link[MatchIt]{matchit}} to obtain the matching result
-> \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-data = lalonde, method = "subclass", subclass = 7)}
-> \code{compute_sub_smd(m_out, sd = "treatment")}
+# take lalonde data as an example
+# run matchit() to obtain the matching result
+ m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+   black, data = MatchIt::lalonde, method = "subclass", subclass = 7)
+ compute_sub_smd(m_out, sd = "treatment")
 }
 \references{
 Austin, P. C. (2011). An Introduction to Propensity Score Methods

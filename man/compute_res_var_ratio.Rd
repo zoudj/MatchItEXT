@@ -40,12 +40,12 @@ for ordinal variable, MASS::polr(method = "logistic") is used, then single
 residual is obtained by using sure::resids().
 }
 \examples{
-> \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-data = lalonde, method = "full")}
+ m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+   black, data = MatchIt::lalonde, method = "full")
 # use parse_formula() to check grouping variable and covariates
-> \code{parse_formula(m_out)}
-> \code{compute_res_var_ratio(original_data = lalonde, mi_obj = m_out,
-type_vec = c(0, 1, 1, 1, 2, 2))}
+ parse_formula(m_out)
+ compute_res_var_ratio(original_data = MatchIt::lalonde, mi_obj =
+  m_out, type_vec = c(0, 1, 1, 1, 2, 2))
 }
 \references{
 Rubin, D. B. (2001). Using propensity scores to help design
@@ -54,7 +54,7 @@ Services and Outcomes Research Methodology, 2}(3/4), 169-188.
 https://doi.org/10.1023/A:1020363010465
 }
 \seealso{
-parse_formula()
+parse_formula() compute_var_ratio()
 }
 \keyword{ratio}
 \keyword{residual}

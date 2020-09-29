@@ -10,7 +10,8 @@ compute_smd(mi_obj = NULL, sd = "pooled")
 \arguments{
 \item{mi_obj}{A matchit object derived from MatchIt pacakge}
 
-\item{sd}{The standard deviation used as the denominator in the formula}
+\item{sd}{The standard deviation used as the denominator in the formula,
+either "pooled" or "treatment"}
 }
 \value{
 Return a data frame containing SMD and other information
@@ -26,18 +27,13 @@ simple pooled standard deviation of original treatment and control group. The
 default is sd = "pooled", but it can be switched to "treatment".
 }
 \examples{
-calculate SMD based on the simple pooled standard deviation
-> \code{smd_data <- compute_smd(mi_obj, sd = "pooled")}
-calculate SMD based on standard deviation of original treatment group
-> \code{smd_data <- compute_smd(mi_obj, sd = "treatment")}
-take lalonde data as an example
-run \code{\link[MatchIt]{matchit}} to obtain the matching result (i.e., a
-matchit object)
-> \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-data = lalonde, method = "optimal")}
-use matching result and \code{\link{compute_smd}} to obtain a SMD data
-frame
-> \code{opt_smd <- compute_smd(m_out, sd = "treatment")}
+# take lalonde data as an example
+# run matchit() to obtain the matching result (i.e., a matchit object)
+ m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+ black, data = MatchIt::lalonde, method = "optimal")
+# use matching result and \code{\link{compute_smd}} to obtain a SMD data
+# frame
+ opt_smd <- compute_smd(m_out, sd = "treatment")
 
 }
 \references{

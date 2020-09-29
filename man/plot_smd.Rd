@@ -24,7 +24,10 @@ it can be revised with ggplot2. Relevant data and codes are stored in the
 returned list.
 }
 \examples{
-> \code{plot_smd_data <- plot_smd(smd_data)}
+m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+ black, data = MatchIt::lalonde, method = "optimal")
+opt_smd <- compute_smd(m_out, sd = "treatment")
+plot_smd_data <- plot_smd(opt_smd)
 }
 \seealso{
 plot_ps_qq()

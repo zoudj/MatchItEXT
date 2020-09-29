@@ -7,19 +7,22 @@
 #'
 #' @param mi_obj A matchit object derived from MatchIt pacakge
 #' @keywords variance ratio
-#' @seealso
+#' @seealso compute_res_var_ratio()
 #' @return Return a vector of variances and variance ratios
 #' @export
 #' @examples
-#' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-#' data = lalonde, method = "full")}
-#' > \code{compute_var_ratio(m_out)}
+#' m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+#' black, data = MatchIt::lalonde, method = "full")
+#' compute_var_ratio(m_out)
 #' @references Rubin, D. B. (2001). Using propensity scores to help design
 #' observational studies: Application to the tobacco litigation. \emph{Health
 #' Services and Outcomes Research Methodology, 2}(3/4), 169-188.
 #' https://doi.org/10.1023/A:1020363010465
 
-compute_var_ratio <- function(mi_obj){
+compute_var_ratio <- function(mi_obj = NULL){
+  if (is(mi_obj, "matchit") == FALSE) {
+    stop("The input data is not a matchit object.")
+  }
   var_tr_bf <- var(mi_obj$distance[mi_obj$treat == 1], na.rm = T)
   var_ctl_bf <- var(mi_obj$distance[mi_obj$treat == 0], na.rm = T)
   ratio_bf <- var_tr_bf / var_ctl_bf
@@ -49,9 +52,9 @@ compute_var_ratio <- function(mi_obj){
 #' @export
 #' @import dplyr
 #' @examples
-#' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-#' data = lalonde, method = "full")}
-#' > \code{parse_formula(m_out)}
+#' m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+#' black, data = MatchIt::lalonde, method = "full")
+#' parse_formula(m_out)
 parse_formula <- function(mi_obj = NULL){
   grouping <- as.character(mi_obj$formula)[2]
   covec <- as.character(mi_obj$formula)[3] %>%
@@ -88,14 +91,14 @@ parse_formula <- function(mi_obj = NULL){
 #' means no observation is discarded before matching, then the ratio before
 #' matching is based on the original intact data.
 #' @export
-#' @seealso parse_formula()
+#' @seealso parse_formula() compute_var_ratio()
 #' @examples
-#' > \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-#' data = lalonde, method = "full")}
+#'  m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+#'    black, data = MatchIt::lalonde, method = "full")
 #' # use parse_formula() to check grouping variable and covariates
-#' > \code{parse_formula(m_out)}
-#' > \code{compute_res_var_ratio(original_data = lalonde, mi_obj = m_out,
-#' type_vec = c(0, 1, 1, 1, 2, 2))}
+#'  parse_formula(m_out)
+#'  compute_res_var_ratio(original_data = MatchIt::lalonde, mi_obj =
+#'   m_out, type_vec = c(0, 1, 1, 1, 2, 2))
 #' @references Rubin, D. B. (2001). Using propensity scores to help design
 #' observational studies: Application to the tobacco litigation. \emph{Health
 #' Services and Outcomes Research Methodology, 2}(3/4), 169-188.
@@ -104,8 +107,8 @@ compute_res_var_ratio<- function(original_data = NULL, mi_obj = NULL, type_vec
                                  = NULL, discard = FALSE){
   covec <- parse_formula(mi_obj)$covec
   if (length(type_vec) != length(covec)){
-    warning("The length of type vector is not equal to the length of covariate
-            vector.")
+    stop(message(strwrap("The length of type vector is not equal to the length
+      of covariate vector.")))
   } else {
     grouping_v <- as.character(mi_obj$formula)[2]
 
@@ -150,8 +153,8 @@ compute_res_var_ratio<- function(original_data = NULL, mi_obj = NULL, type_vec
           with(dat_bf, var(residuals[get(grouping_v) == 0]))
         dat_bf$residuals <- NULL
       } else {
-        warning(sprintf("There's something wrong in your sepecification of
-                        covariate types at vector element %d.", k))
+        warning(strwrap(sprintf("There's something wrong in your sepecification
+          of covariate types at vector element %d.", k)))
       }
     }
 

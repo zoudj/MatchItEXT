@@ -1,2 +1,6 @@
 ^MatchItEXT\.Rproj$
 ^\.Rproj\.user$
+^LICENSE\.md$
+^README\.Rmd$
+^data-raw$
+^data$

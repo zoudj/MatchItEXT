@@ -17,9 +17,9 @@ This function parses the formula used in matchit() to obtain the grouping
 variable and the covariate vector.
 }
 \examples{
-> \code{m_out <- matchit(treat ~ re74 + re75 + age + educ + hisp + black,
-data = lalonde, method = "full")}
-> \code{parse_formula(m_out)}
+m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
+black, data = MatchIt::lalonde, method = "full")
+parse_formula(m_out)
 }
 \keyword{covariate}
 \keyword{grouping}
