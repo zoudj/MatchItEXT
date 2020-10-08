@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
-#' black, data = MatchIt::lalonde, method = "full")
+#' black, data = MatchIt::lalonde, method = "nearest")
 #' compute_var_ratio(m_out)
 #' @references Rubin, D. B. (2001). Using propensity scores to help design
 #' observational studies: Application to the tobacco litigation. \emph{Health
@@ -53,7 +53,7 @@ compute_var_ratio <- function(mi_obj = NULL){
 #' @import dplyr
 #' @examples
 #' m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
-#' black, data = MatchIt::lalonde, method = "full")
+#' black, data = MatchIt::lalonde, method = "nearest")
 #' parse_formula(m_out)
 parse_formula <- function(mi_obj = NULL){
   grouping <- as.character(mi_obj$formula)[2]
@@ -90,11 +90,12 @@ parse_formula <- function(mi_obj = NULL){
 #' then the ratio before matching is based on the data after discard; FALSE
 #' means no observation is discarded before matching, then the ratio before
 #' matching is based on the original intact data.
+#' @importFrom stats as.formula glm gaussian binomial
 #' @export
 #' @seealso parse_formula() compute_var_ratio()
 #' @examples
-#'  m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
-#'    black, data = MatchIt::lalonde, method = "full")
+#'  m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan + black,
+#'   data = MatchIt::lalonde, method = "nearest")
 #' # use parse_formula() to check grouping variable and covariates
 #'  parse_formula(m_out)
 #'  compute_res_var_ratio(original_data = MatchIt::lalonde, mi_obj =
@@ -129,7 +130,8 @@ compute_res_var_ratio<- function(original_data = NULL, mi_obj = NULL, type_vec
       } else if (type_vec[k] == 1 | type_vec[k] == '1' | type_vec[k] ==
                  'continuous'){
         # regular linear regression for continuous variable
-        mod <- glm(formula = formu, family = gaussian, data = dat_bf)
+        mod <- glm(formula = formu, family = gaussian(link = "identity"),
+                   data = dat_bf)
         dat_bf$residuals <- mod$residuals
         ratio_vec_bf[k] <- with(dat_bf, var(residuals[get(grouping_v) == 1])) /
           with(dat_bf, var(residuals[get(grouping_v) == 0]))
@@ -169,8 +171,8 @@ compute_res_var_ratio<- function(original_data = NULL, mi_obj = NULL, type_vec
       } else if (type_vec[i] == 1 | type_vec[i] == '1' | type_vec[i] ==
                  'continuous'){
         # regular linear regression for continuous variable
-        mod <- glm(formula = formu, family = gaussian, data = dat_af, weights =
-                     weights)
+        mod <- glm(formula = formu, family = gaussian(link = "identity"),
+                   data = dat_af, weights = .data$weights)
         dat_af$residuals <- mod$residuals
         ratio_vec_af[i] <- with(dat_af, var(residuals[get(grouping_v) == 1])) /
           with(dat_af, var(residuals[get(grouping_v) == 0]))
@@ -179,7 +181,7 @@ compute_res_var_ratio<- function(original_data = NULL, mi_obj = NULL, type_vec
                  'binary'){
         # logistic regression for binary variable
         mod <- glm(formula = formu, family = binomial(link = "logit"), data =
-                     dat_af, weights = weights)
+                     dat_af, weights = .data$weights)
         dat_af$residuals <- mod$residuals
         ratio_vec_af[i] <- with(dat_af, var(residuals[get(grouping_v) == 1])) /
           with(dat_af, var(residuals[get(grouping_v) == 0]))
@@ -188,7 +190,7 @@ compute_res_var_ratio<- function(original_data = NULL, mi_obj = NULL, type_vec
                  'ordinal'){
         # ordinal logistics regression for ordinal variable
         dat_af[,grouping_v] <- as.factor(dat_af[,grouping_v])
-        mod <- MASS::polr(formula = formu, data = dat_af, weights = weights,
+        mod <- MASS::polr(formula = formu, data = dat_af, weights = .data$weights,
                           method = "logistic")
         dat_af$residuals <- sure::resids(mod)
         ratio_vec_af[i] <- with(dat_af, var(residuals[get(grouping_v) == 1])) /

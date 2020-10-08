@@ -20,7 +20,7 @@
 #' @export
 #' @examples
 #' m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
-#'  black, data = MatchIt::lalonde, method = "optimal")
+#'  black, data = MatchIt::lalonde, method = "nearest")
 #' opt_smd <- compute_smd(m_out, sd = "treatment")
 #' plot_smd_data <- plot_smd(opt_smd)
 plot_smd <- function(smd_data = NULL) {
@@ -28,16 +28,16 @@ plot_smd <- function(smd_data = NULL) {
              class(smd_data)[2] == "smd.data")) {
     class(smd_data) <- class(smd_data)[1]
     df <- smd_data %>%
-      dplyr::select(smd_before, smd_after) %>%
+      dplyr::select(.data$smd_before, .data$smd_after) %>%
       tibble::rownames_to_column("var") %>%
       dplyr::mutate(trend =
-                      ifelse(abs(smd_after) < abs(smd_before), "decrease",
-                             ifelse(abs(smd_after) > abs(smd_before),
-                                    "increase", "no change")))
+          ifelse(abs(.data$smd_after) < abs(.data$smd_before), "decrease",
+            ifelse(abs(.data$smd_after) > abs(.data$smd_before),
+                   "increase", "no change")))
     df_increase <- df %>%
-      dplyr::filter(trend == "increase")
+      dplyr::filter(.data$trend == "increase")
     df <- df %>%
-      tidyr::pivot_longer(!c(var, trend), names_to = "stage",
+      tidyr::pivot_longer(!c(.data$var, .data$trend), names_to = "stage",
                           values_to = "smd")
 
     df$trend[df$var == "distance"] <- "overall"
@@ -46,37 +46,35 @@ plot_smd <- function(smd_data = NULL) {
                          c("overall", "decrease", "increase", "no change"))
     colors <- c("royalblue", "gray70", "firebrick", "springgreen")
 
-    p_smd<- ggplot(data = df, aes(x = stage, y = smd, group = var)) +
+    ylimits <- range(c(smd_data$smd_before, smd_data$smd_after))
+    p_smd<- ggplot(data = df, aes(x = stage, y = .data$smd, group = var)) +
       labs(title = "Comparison of SMD Before and After Matching",
            x = NULL, y = "Standardized Mean Difference" ) +
       geom_hline(yintercept = c(-0.2, -0.1, 0, 0.1, 0.2), color = "gray90") +
-      scale_y_continuous(breaks = round(seq(-0.3, 1, 0.1), digits = 1)) +
+      scale_y_continuous(breaks = round(seq(ylimits[1], ylimits[2], 0.1),
+                                        digits = 1)) +
       scale_x_discrete(breaks=c("smd_before","smd_after"),
                        labels=c("All Data", "Matched Data")) +
-      geom_line(aes(colour = trend)) +
-      geom_point(aes(colour = trend)) +
+      geom_line(aes(colour = .data$trend)) +
+      geom_point(aes(colour = .data$trend)) +
       theme_bw() +
       theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank()) +
       scale_colour_manual(values=colors)
     p_smd_code <- quote(ggplot(data = df,
-                          aes(x = stage, y = smd, group = var)) +
-                          labs(title =
-                                 "Comparison of SMD Before and After Matching",
-                               x = NULL, y = "Standardized Mean Difference" ) +
-                          geom_hline(yintercept = c(-0.2, -0.1, 0, 0.1, 0.2),
-                                     color = "gray90") +
-                          scale_y_continuous(breaks = round(seq(-0.3, 1, 0.1),
-                                                            digits = 1)) +
-                          scale_x_discrete(breaks=c("smd_before","smd_after"),
-                                           labels=c("All Data",
-                                                    "Matched Data")) +
-                          geom_line(aes(colour = trend)) +
-                          geom_point(aes(colour = trend)) +
-                          theme_bw() +
-                          theme(panel.grid.major = element_blank(),
-                                panel.grid.minor = element_blank()) +
-                          scale_colour_manual(values=colors))
+        aes(x = stage, y = .data$smd, group = var)) +
+        labs(title = "Comparison of SMD Before and After Matching",
+            x = NULL, y = "Standardized Mean Difference" ) +
+        geom_hline(yintercept = c(-0.2, -0.1, 0, 0.1, 0.2), color = "gray90") +
+        scale_y_continuous(breaks = round(seq(-0.3, 1, 0.1), digits = 1)) +
+        scale_x_discrete(breaks=c("smd_before","smd_after"),
+          labels=c("All Data", "Matched Data")) +
+        geom_line(aes(colour = .data$trend)) +
+        geom_point(aes(colour = .data$trend)) +
+        theme_bw() +
+        theme(panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank()) +
+        scale_colour_manual(values=colors))
     results<- list(data = df, smd_increase = df_increase,
                    plot_code = p_smd_code, colors = colors, plot = p_smd)
     return(results)
@@ -103,6 +101,8 @@ plot_smd <- function(smd_data = NULL) {
 #' @return Return a list of relevant data, code, and QQ plot
 #' @export
 #' @import ggplot2
+#' @importFrom grDevices devAskNewPage
+#' @importFrom stats qqplot
 #' @examples
 #' # take lalonde data as an example
 #'  m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
@@ -121,12 +121,13 @@ plot_ps_qq <- function(mi_obj = NULL) {
   # Set the x and y limits
   xylim <- range(c(qq_table_bf$x, qq_table_bf$y))
   # Generate qq plot
-  qq_bf <- ggplot(qq_table_bf, aes( x = x, y = y)) + geom_point() +
+  qq_bf <- ggplot(qq_table_bf, aes( x = .data$x, y = .data$y)) + geom_point() +
     geom_abline(intercept = 0, slope = 1) +
     coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
     xlab("Control Group") + ylab("Treatment Group") +
     ggtitle("Before Matching") + theme(plot.title = element_text(hjust = 0.5))
-  qq_bf_code <- quote(ggplot(qq_table_bf, aes( x = x, y = y)) + geom_point() +
+  qq_bf_code <- quote(ggplot(qq_table_bf, aes( x = .data$x, y = .data$y)) +
+                        geom_point() +
                         geom_abline(intercept = 0, slope = 1) +
                         coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
                         xlab("Control Group") + ylab("Treatment Group") +
@@ -149,12 +150,13 @@ plot_ps_qq <- function(mi_obj = NULL) {
   quan_af_ctl <- Hmisc::wtd.quantile(df_af_ctl$ps, weights = df_af_ctl$wt,
                                      probs = quantile_seq)
   qq_table_af <- data.frame(x = quan_af_ctl, y = quan_af_tr)
-  qq_af <- ggplot(data = qq_table_af, aes( x= x, y = y)) +
+  qq_af <- ggplot(data = qq_table_af, aes( x= .data$x, y = .data$y)) +
     geom_point() + geom_abline( intercept=0, slope=1) +
     coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
     xlab("Control Group") + ylab("Treatment Group") +
     ggtitle("After Matching") + theme(plot.title = element_text(hjust = 0.5))
-  qq_af_code <- quote(ggplot(data = qq_table_af, aes( x= x, y = y)) +
+  qq_af_code <- quote(ggplot(data = qq_table_af,
+                             aes( x= .data$x, y = .data$y)) +
                         geom_point() + geom_abline( intercept=0, slope=1) +
                         coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
                         xlab("Control Group") + ylab("Treatment Group") +

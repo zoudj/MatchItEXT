@@ -18,7 +18,7 @@ variable and the covariate vector.
 }
 \examples{
 m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
-black, data = MatchIt::lalonde, method = "full")
+black, data = MatchIt::lalonde, method = "nearest")
 parse_formula(m_out)
 }
 \keyword{covariate}

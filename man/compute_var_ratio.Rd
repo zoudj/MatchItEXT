@@ -20,7 +20,7 @@ to assess the similarity of distributions between groups.
 }
 \examples{
 m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
-black, data = MatchIt::lalonde, method = "full")
+black, data = MatchIt::lalonde, method = "nearest")
 compute_var_ratio(m_out)
 }
 \references{

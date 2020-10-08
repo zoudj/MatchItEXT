@@ -30,8 +30,8 @@ default is sd = "pooled", but it can be switched to "treatment".
 # take lalonde data as an example
 # run matchit() to obtain the matching result (i.e., a matchit object)
  m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
- black, data = MatchIt::lalonde, method = "optimal")
-# use matching result and \code{\link{compute_smd}} to obtain a SMD data
+ black, data = MatchIt::lalonde, method = "nearest")
+# use matching result and compute_smd() to obtain a SMD data
 # frame
  opt_smd <- compute_smd(m_out, sd = "treatment")
 

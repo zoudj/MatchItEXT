@@ -1,0 +1,266 @@
+---
+title: "MatchItEXT: Supplementary to MatchIt"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{MatchItEXT: Supplementary to MatchIt}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+MatchItEXT is a supplementary package to MatchIt. As the name implies, it can 
+be regarded as an extension of MatchIt. It draws on the results from the latter 
+to do further computation or plotting and to generate several outputs that are 
+not available in MatchIt. A researcher might be interested in these outputs 
+because they can help diagnose the matching result.
+
+For now, functions in MatchItEXT (0.1.0) mainly include the following three 
+aspects:
+
+1. Computing Standardized Mean Difference (SMD).
+1. Drawing two types of comparison plot before and after matching to show the 
+matching result.
+1. Computing two types of variance ratio as diagnostics of the matching result.
+
+This tutorial will use the data set _lalonde_ in MatchIt to demonstrate how to 
+apply MatchItEXT functions. The readers of this tutorial are assumed to have 
+used MatchIt package before. Note the analyses below are only for the purpose of 
+demonstration, and without a solid theoretical foundation. Therefore, the result
+ of matching in this tutorial is not of substantial meaning. The interpretation 
+of results is omitted.
+
+###### Step 1: Loading the required packages and data set
+First of all, if the required packages are not installed yet, we need install 
+them first. If they have been installed, this step can be skipped.
+```{r install, eval= FALSE}
+pkg <- c("MatchIt", "MatchItEXT", "ggplot2")
+install.packages(pkg)
+```
+
+Then, we can load required packages and example data set _lalonde_. If you are 
+not familiar with this data set, please refer to the documentation of MatchIt 
+package 
+([click here](https://cran.r-project.org/web/packages/MatchIt/MatchIt.pdf)).
+Note there are different versions of _lalonde_ data set online, the sample size 
+and variable names might slightly differ from each other. 
+
+```{r setup}
+library(MatchIt)
+library(MatchItEXT)
+library(ggplot2)
+data(lalonde)
+```
+
+###### Step 2: Checking data set lalonde
+Since the data set has been loaded, we can have a glance at it.
+```{r}
+## Checking the size and structure of lalonde.
+str(lalonde)
+
+## Checking the first 5 rows of lalonde.
+head(lalonde, 5)
+
+## Checking whether there is any missing value in each column.
+sapply(lalonde, function(x) sum(is.na(x)))
+
+## No missing value was found.
+```
+###### Step 3: Generating a MatchIt result
+To use the functions in MatchItEXT, most of the time we need results from 
+MatchIt. So we would first generate an example from matchit() for later use. if 
+you are new to MatchIt, please read this [official tutorial](https://imai.fas.harvard.edu/research/files/matchit.pdf).
+```{r}
+## Noticing that dichotomous variables that would be used  are of numeric type, 
+## they should be converted to factor type beforehand.
+lalonde$treat <- as.factor(lalonde$treat)
+lalonde$black <- as.factor(lalonde$black)
+lalonde$hispan <- as.factor(lalonde$hispan)
+## Creating a propensity score estimation formula.
+## In the formula, treat, black, and hispan are treated as binary variables.
+formu <- as.formula(treat ~ re74 + re75 + age + educ + black + hispan)
+## Applying Nearest neighbor matching on the selected covariates. The result 
+## would be used as an input in the MatchItEXT functions. You can try other 
+## matching methods such as "optimal", "full, "genetic", etc.
+m_near <- MatchIt::matchit(formula = formu, data = lalonde, distance = "logit",
+                           method = "nearest")
+```
+###### Step 4: Computing the Standardized Mean Difference (SMD)
+SMD is defined as the difference between the focal and reference group divided 
+by a standard deviation (Austin, 2011). If we compute the SMD before and after 
+matching, we would know whether the SMD is broadened or narrowed after matching.
+ Thus, it can be used as a diagnostic of matching result. An absoulte value of 
+SMD less than 0.1 is considered as an acceptable value that shows enough 
+similarity between groups (Austin, 2011). MatchItEXT applies formulae provided 
+by Austin (2011) to compute SMD. Note the formula for continuous variables 
+differs from that for binary variables. For multiple categorical variables, they
+ can be represented by a bunch of binary variables (Austin, 2011). 
+
+As for the computation of standard deviation (SD), usually there are two options
+. One is a simple pooled SD based on both treatment group and control group 
+before matching. The other is just the SD of original treatment group. N.B. that
+ MatchIt package uses the latter (Ho et al., 2011). Thus, there is a _sd_ 
+argument in the function, if you want to be consistent with MatchIt, you can 
+choose "treatment". The default is "pooled". Also note the SMD can be larger 
+than one, which just means the difference is larger than one SD. 
+```{r}
+## Computing Standardized Mean Difference (SMD).
+## If the matching result is satisfying, most SMD after matching would drop in 
+## the range of -0.1 ~ 0.1, see the column "smd_after".
+smd_near <- compute_smd(mi_obj = m_near, sd = "pooled")
+smd_near
+
+## Column names explanation:
+## mean_tr_bf: mean of treatment group before matching
+## mean_ctl_bf: mean of control group before matching
+## mean_tr_af: mean of treatment group after matching
+## mean_ctl_af: mean of control group after matching
+## var_type: variable type
+## var_tr_bf: variance of treatment group before matching
+## var_ctl_bf: variance of control group before matching
+## sd_bf_pooled: pooled standard deviation before matching
+## sd_bf_tr: standard deviation of treatment group before matching
+## smd_before: SMD before matching
+## smd_after: SMD after matching
+
+## Switching "pooled" SD to "treatment" SD.
+smd_near <- compute_smd(mi_obj = m_near, sd = "treatment")
+smd_near
+```
+From the above results, the first row "distance" denotes the overall distance 
+measure (i.e., the propensity score in our case). It follows a set of covariates
+ used in the formula. The last two columns in the data frame are SMD before and 
+after matching.
+
+MatchIt package supports various matching methods. As of version 3.0.2, it can 
+apply six methods, including "exact", "full", "genetic", "nearest", "optimal", 
+and "subclass". Among these methods, the result of "full", "genetic", "nearest",
+ and "optimal" are applicable to compute_smd(), while the result of "exact" is 
+not applicable. For the result of "subclass", we can apply compute_sub_smd(), as
+ shown below.
+```{r}
+## Generating a subclassification result from matchit() with the same formula.
+m_sub <- MatchIt::matchit(formula = formu, data = lalonde, distance = "logit",
+                           method = "subclass", subclass = 5)
+smd_sub <- compute_sub_smd(mi_obj = m_sub, sd = "pooled")
+## The threshold of good matching for SMD is ± 0.1. The closer to 0, the better.
+smd_sub
+```
+Different from compute_smd(), the result of compute_sub_smd() only provides a 
+single SMD, indicating the overall difference of distance measure after 
+subclassification. There is no separate SMD for each covariate when using 
+subclassification method.
+
+###### Step 5: Drawing SMD comparison dot-and-line plot
+Although MatchIt provides a function to draw similar dot-and-line comparison 
+plot (e.g., plot(summary(m_near, standardize = TRUE))), the following plot 
+function differs from its counterpart in that: 
+
+1. coloring different types of variable: SMD of overall distance is colored in 
+blue, increased SMD after matching is colored in red, unchanged SMD is colored 
+in green, and decreased SMD is colored in gray.
+1. using original SMD rather than the absolute value of SMD. Hence, there would 
+be negative SMD.
+1. drawing horizontal lines of -0.2, -0.1, 0.1, and 0.2 to help distinguish 
+matching result areas.
+1. providing R code for further revision if the user is not satisfied with the 
+plot.
+
+```{r, fig.width = 7, fig.height = 5}
+## If the matching result is satisfying, most SMD after matching would rest in 
+## the range of -0.1 ~ 0.1.
+plot_smd_near <- plot_smd(smd_near)
+plot_smd_near$plot
+## Increased SMD are stored in the returning result, R code for plotting and 
+## other relevant data are available as well, use '$' to obtain them.
+plot_smd_near$smd_increase
+plot_smd_near$plot_code
+```
+###### Step 6: Drawing QQ plot for group comparison on the distance measure
+Although MatchIt provides a function to draw QQ plots (e.g., plot(m_near), the 
+default plot type for MatchIt results), it only generates QQ plots for 
+covariates, not for the overall distance measure. The following function 
+plot_ps_qq() can draw it for you.
+```{r, fig.width = 7, fig.height = 5}
+## QQ plot for overall distance measure (propensity score in our case).
+## If the matching result is good enough, most points in the QQ plot after 
+## matching would rest on the 45-degree line.
+m_near_qq <- plot_ps_qq(m_near)
+m_near_qq$plot
+```
+
+###### Step 7: Computing variance ratio and residual variance ratio
+Besides SMD, Rubin (2001) proposed two other diagnostics for propensity score 
+matching, the one is the ratio of the variances of the propensity scores 
+between the two groups (treatment group to control group), the other is the 
+ratio of the variance of the residuals orthogonal to the propensity scores 
+between the two groups, for each of the covariates. As for the criterion, the 
+ideal ratio should be close to one, which means variances from two groups are 
+similar. A ratio of less than 1/2 or larger than 2 is far too extreme (Rubin, 
+2001). These two diagnostics are less popular in practice. We can compute both 
+with the following functions.
+```{r}
+## Computing variance ratio of propensity score
+m_near_var_ratio <- compute_var_ratio(m_near)
+m_near_var_ratio
+
+## Column names explanation:
+## var_tr_bf: variance of treatment group before matching
+## var_ctl_bf: variance of control group before matching
+## var_tr_af: variance of treatment group after matching
+## var_ctl_af: variance of control group after matching
+## ratio_bf: variance ratio before matching
+## ratio_af: variance ratio after matching
+
+## Computing residual variance ratio for each covariate
+## Checking the formula for propensity score estimation
+parse_formula(m_near)
+## This auxiliary function shows covariates in the formula to help decide 
+## variable types.
+
+## The function requires the original data set, the MatchIt object (except for 
+## results from "exact" or "subclass" method), and a vector specifying 
+## covariate types.
+## Valid values for covariate types:
+## do not include this covariate: 'excluded', '0', 0, NA;
+## continuous variable: 'continuous', '1', 1;
+## dichotomous variable: 'binary', '2', 2;
+## ordinal variable: 'ordinal', '3', 3.
+## Note a vector in R does not support different types of values, thus these 
+## valid values cannot be mixed.
+
+## Note multinomial variable is not applicable to this function.
+
+## The 'discard' argument is logical to judge if some cases were discarded 
+## before matching. The default is FALSE, no discard before matching. 
+compute_res_var_ratio(original_data = lalonde, mi_obj = m_near, type_vec = 
+                        c(0, 1, 1, 1, 2, 2), discard = FALSE)
+```
+
+
+#### Summary
+As shown above, MatchItEXT package helps diagnose the result of matching by 
+calculating SMD, variance ratio and redisual variance ratio. Besides that, it 
+can draw SMD dot-and-line plot and QQ plot to compare the matching result before
+ and after matching. These are unavailable in MatchIt package. Therefore, it is 
+a supplementary package to MatchIt.
+
+
+#### References
+Austin, P. C. (2011). An Introduction to Propensity Score Methods for Reducing 
+the Effects of Confounding in Observational Studies. 
+_Multivariate Behavioral Research, 46_(3), 399–424. https://doi.org/10.1080/00273171.2011.568786
+
+Ho, D. E., Imai, K., King, G., & Stuart, E. A. (2011). MatchIt: Nonparametric 
+Preprocessing for Parametric Causal Inference. 
+_Journal of Statistical Software, 42_(8). 
+https://doi.org/10.18637/jss.v042.i08
+
+Rubin, D. B. (2001). Using propensity scores to help design observational 
+studies: Application to the tobacco litigation. 
+_Health Services and Outcomes Research Methodology, 2_(3/4), 169–188. https://doi.org/10.1023/A:1020363010465

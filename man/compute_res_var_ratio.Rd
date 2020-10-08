@@ -40,8 +40,8 @@ for ordinal variable, MASS::polr(method = "logistic") is used, then single
 residual is obtained by using sure::resids().
 }
 \examples{
- m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
-   black, data = MatchIt::lalonde, method = "full")
+ m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan + black,
+  data = MatchIt::lalonde, method = "nearest")
 # use parse_formula() to check grouping variable and covariates
  parse_formula(m_out)
  compute_res_var_ratio(original_data = MatchIt::lalonde, mi_obj =

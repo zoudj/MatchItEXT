@@ -16,13 +16,15 @@
 #' @aliases SMD
 #' @seealso compute_sub_smd()
 #' @return Return a data frame containing SMD and other information
+#' @importFrom methods is
+#' @importFrom stats var
 #' @export
 #' @examples
 #' # take lalonde data as an example
 #' # run matchit() to obtain the matching result (i.e., a matchit object)
 #'  m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
-#'  black, data = MatchIt::lalonde, method = "optimal")
-#' # use matching result and \code{\link{compute_smd}} to obtain a SMD data
+#'  black, data = MatchIt::lalonde, method = "nearest")
+#' # use matching result and compute_smd() to obtain a SMD data
 #' # frame
 #'  opt_smd <- compute_smd(m_out, sd = "treatment")
 #'
@@ -121,6 +123,8 @@ compute_smd<- function(mi_obj = NULL, sd = "pooled"){
 #' @seealso compute_smd()
 #' @return Return a scalar (the overall SMD)
 #' @import dplyr MatchIt tidyr
+#' @importFrom methods is
+#' @importFrom stats weighted.mean
 #' @importFrom MatchIt match.data
 #' @importFrom tidyr pivot_wider
 #' @export
@@ -150,13 +154,13 @@ compute_sub_smd <- function(mi_obj = NULL, sd = "pooled"){
     matched_data <- MatchIt::match.data(mi_obj)
     compared_var <- as.character(mi_obj$formula)[2]
     sub_mean_diff <- suppressMessages(matched_data %>%
-      dplyr::group_by(subclass, .data[[compared_var]]) %>%
-      dplyr::summarise(weighted_mean = weighted.mean(distance, weights),
-                       n = n()) %>%
+      dplyr::group_by(.data$subclass, .data[[compared_var]]) %>%
+      dplyr::summarise(weighted_mean =
+               weighted.mean(.data$distance, .data$weights), n = n()) %>%
       tidyr::pivot_wider(names_from = .data[[compared_var]], values_from =
-                           c(weighted_mean, n)) %>%
-      dplyr::mutate(mean_diff = weighted_mean_1 - weighted_mean_0,
-                    sub_n = n_0 + n_1, product = mean_diff * sub_n))
+                           c(.data$weighted_mean, n)) %>%
+      dplyr::mutate(mean_diff = .data$weighted_mean_1 - .data$weighted_mean_0,
+        sub_n = .data$n_0 + .data$n_1, product = .data$mean_diff * .data$sub_n))
     var_bf_tr <- var(mi_obj$distance[mi_obj$treat == 1])
     var_bf_ctl <- var(mi_obj$distance[mi_obj$treat == 0])
     sd_bf_pooled <- sqrt((var_bf_tr + var_bf_ctl) /2)

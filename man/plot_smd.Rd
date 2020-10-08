@@ -25,7 +25,7 @@ returned list.
 }
 \examples{
 m_out <- MatchIt::matchit(treat ~ re74 + re75 + age + educ + hispan +
- black, data = MatchIt::lalonde, method = "optimal")
+ black, data = MatchIt::lalonde, method = "nearest")
 opt_smd <- compute_smd(m_out, sd = "treatment")
 plot_smd_data <- plot_smd(opt_smd)
 }

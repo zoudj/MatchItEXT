@@ -1,5 +1,5 @@
 Package: MatchItEXT
-Title: A Complementary Function Set to MatchIt
+Title: A Supplementary Function Set to MatchIt
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Danjie",
@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "zoudanjie7@gmail.com",
            comment = c(ORCID = "https://orcid.org/0000-0003-2280-0335"))
-Description: This function set is complementary to MatchIt. Its functions conduct several computations
+Description: This function set is supplementary to MatchIt. Its functions conduct several computations
     that MatchIt does not provide. It takes the MatchIt result object and/or the original
     data to compute standardized mean differences (SMD) between groups before and after matching.
     It also calculates ratio of variances and ratio of residual variances. In addition, it draws
@@ -21,12 +21,22 @@ RoxygenNote: 7.1.1
 Imports: 
     dplyr,
     ggplot2,
+    ggpubr,
+    Hmisc,
     MatchIt,
+    MASS,
+    sure,
     tibble,
-    tidyr
+    tidyr,
+    methods,
+    stats
 Suggests: 
+    knitr,
+    qpdf,
+    rmarkdown,
     spelling,
     testthat
 Language: en-US
 Depends: 
     R (>= 2.10)
+VignetteBuilder: knitr
