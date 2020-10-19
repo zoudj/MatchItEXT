@@ -94,7 +94,7 @@ m_near <- MatchIt::matchit(formula = formu, data = lalonde, distance = "logit",
 SMD is defined as the difference between the focal and reference group divided 
 by a standard deviation (Austin, 2011). If we compute the SMD before and after 
 matching, we would know whether the SMD is broadened or narrowed after matching.
- Thus, it can be used as a diagnostic of matching result. An absoulte value of 
+ Thus, it can be used as a diagnostic of matching result. An absolute value of 
 SMD less than 0.1 is considered as an acceptable value that shows enough 
 similarity between groups (Austin, 2011). MatchItEXT applies formulae provided 
 by Austin (2011) to compute SMD. Note the formula for continuous variables 
@@ -245,7 +245,7 @@ compute_res_var_ratio(original_data = lalonde, mi_obj = m_near, type_vec =
 
 #### Summary
 As shown above, MatchItEXT package helps diagnose the result of matching by 
-calculating SMD, variance ratio and redisual variance ratio. Besides that, it 
+calculating SMD, variance ratio and residual variance ratio. Besides that, it 
 can draw SMD dot-and-line plot and QQ plot to compare the matching result before
  and after matching. These are unavailable in MatchIt package. Therefore, it is 
 a supplementary package to MatchIt.
