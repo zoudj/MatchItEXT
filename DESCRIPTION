@@ -1,5 +1,5 @@
 Package: MatchItEXT
-Title: A Supplementary Function Set to MatchIt
+Title: A Supplementary Function Set to 'MatchIt'
 Version: 0.0.1
 Authors@R: 
     person(given = "Danjie",
@@ -7,8 +7,8 @@ Authors@R:
            role = c("aut", "cre"),
            email = "zoudanjie7@gmail.com",
            comment = c(ORCID = "https://orcid.org/0000-0003-2280-0335"))
-Description: This function set is supplementary to MatchIt. Its functions conduct several computations
-    that MatchIt does not provide. It takes the MatchIt result object and/or the original
+Description: This function set is supplementary to 'MatchIt'. Its functions conduct several computations
+    that 'MatchIt' does not provide. It takes the 'MatchIt' result object and/or the original
     data to compute standardized mean differences (SMD) between groups before and after matching.
     It also calculates ratio of variances and ratio of residual variances. In addition, it draws
     SMD comparison plots and QQ plots of distance measure score to help diagnose the matching 
