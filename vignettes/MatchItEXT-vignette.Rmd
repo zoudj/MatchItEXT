@@ -45,10 +45,8 @@ install.packages(pkg)
 
 Then, we can load required packages and example data set _lalonde_. If you are 
 not familiar with this data set, please refer to the documentation of MatchIt 
-package 
-([click here](https://cran.r-project.org/web/packages/MatchIt/MatchIt.pdf)).
-Note there are different versions of _lalonde_ data set online, the sample size 
-and variable names might slightly differ from each other. 
+package. Note there are different versions of _lalonde_ data set online, the 
+sample size and variable names might slightly differ from each other. 
 
 ```{r setup}
 library(MatchIt)
@@ -74,7 +72,7 @@ sapply(lalonde, function(x) sum(is.na(x)))
 ###### Step 3: Generating a MatchIt result
 To use the functions in MatchItEXT, most of the time we need results from 
 MatchIt. So we would first generate an example from matchit() for later use. if 
-you are new to MatchIt, please read this [official tutorial](https://imai.fas.harvard.edu/research/files/matchit.pdf).
+you are new to MatchIt, please refer to its official tutorial (Ho et al., 2001).
 ```{r}
 ## Noticing that dichotomous variables that would be used  are of numeric type, 
 ## they should be converted to factor type beforehand.
